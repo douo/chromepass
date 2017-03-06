@@ -1,4 +1,6 @@
 import os,sys
+reload(sys)
+sys.setdefaultencoding('utf-8')
 import sqlite3
 try:
     import win32crypt
@@ -10,9 +12,12 @@ import argparse
 def args_parser():
     parser = argparse.ArgumentParser(description="Retrieve Google Chrome Passwords")
     parser.add_argument("--output", help="Output to csv file", action="store_true")
+    parser.add_argument("--output2", help="Output to csv file with host field", action="store_true")
     args = parser.parse_args()
     if args.output:
         csv(main())
+    elif args.output2:
+        csv2(main())
     else:
         for data in main():
             print(data)
@@ -93,13 +98,26 @@ def getpath():
                 print '[!] Chrome Doesn\'t exists'
                 sys.exit(0)
     
-    return PathName            
+    return PathName
+
 
 def csv(info):
     with open('chromepass.csv', 'wb') as csv_file:
         csv_file.write('origin_url,username,password \n'.encode('utf-8'))
         for data in info:
             csv_file.write(('%s, %s, %s \n' % (data['origin_url'], data['username'], data['password'])).encode('utf-8'))
+    print("Data written to chromepass.csv")
+
+
+def csv2(info):
+    from urlparse import urlparse
+    with open('chromepass.csv', 'wb') as csv_file:
+        csv_file.write('hosts,username,password,origin_url \n'.encode('utf-8'))
+        for data in info:
+            # print(urlparse(data['origin_url']).netloc)
+            # print('%s' % data['password'].decode('utf-8'))
+            # print(('%s, %s, %s \n' % (data['origin_url'], data['username'], data['password'].decode('utf-8'))))
+            csv_file.write(('%s, %s, %s, %s \n' % (urlparse(data['origin_url']).netloc, data['username'], data['password'], data['origin_url'])).encode('utf-8'))
     print("Data written to chromepass.csv")
 
 
